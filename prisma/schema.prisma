@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum PropertyFor {
+  RENT
+  SALE
+}
+
+enum PropertyType {
+  APARTMENT
+  INDEPENDENT
+}
+
+enum BHK {
+  ONE_BHK
+  TWO_BHK
+  THREE_BHK
+  FOUR_BHK
+}
+
+enum Parking {
+  YES
+  NO
+}
+
+enum PreferredTenants {
+  FAMILY
+  BACHELOR
+  ANY
+}
+
+// Models
+model User {
+  id               Int        @id @default(autoincrement())
+  username         String
+  email            String     @unique
+  image            String?
+  savedProperties  Property[] @relation("SavedByUsers") // many-to-many
+  property         Property[] @relation("OwnerProperties") // user owns properties
+  createAt         DateTime   @default(now())
+  updatedAt        DateTime   @default(now()) @updatedAt
+  sentMessages     Message[]  @relation("SentMessages")
+  receivedMessages Message[]  @relation("ReceivedMessages")
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  message   String   @db.Text
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId Int
+
+  sender   User @relation("SentMessages", fields: [senderId], references: [id])
+  senderId Int
+
+  receiver   User @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  receiverId Int
+}
+
+model Property {
+  id               Int              @id @default(autoincrement())
+  name             String
+  description      String           @db.Text
+  type             PropertyFor
+  propertyType     PropertyType
+  price            Float
+  street           String
+  city             String
+  state            String
+  zipcode          String
+  bhk              BHK
+  area             Float
+  parking          Parking
+  preferredTenants PreferredTenants
+  availableFrom    DateTime
+  isFeatured       Boolean
+  isSold           Boolean          @default(false)
+  ownerId          Int
+  owner            User             @relation("OwnerProperties", fields: [ownerId], references: [id])
+  images           Image[]
+  savedBy          User[]           @relation("SavedByUsers") // many-to-many
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @default(now()) @updatedAt
+  messages         Message[]
+}
+
+model Image {
+  id         String   @id @default(cuid())
+  url        String
+  propertyId Int
+  property   Property @relation(fields: [propertyId], references: [id])
+}
