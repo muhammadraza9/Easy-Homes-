@@ -1,0 +1,1 @@
+Easy Homes is a full-stack real estate web application built with Next.js, TypeScript, Ant Design, Prisma, and MySQL. The platform allows users to browse, search, and manage property listings for rent and sale through a modern and responsive interface.
